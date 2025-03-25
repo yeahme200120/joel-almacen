@@ -286,9 +286,39 @@
                             "previous": "Anterior"
                         }
                     },
-                    dom: 'Bfrtip',
+                    dom: '<"row"<"col-md-6"B><"col-md-6"f>>rtip',
                     buttons: [
-                        'copy', 'csv', 'excel', 'pdf', 'print'
+                        {
+                            extend: 'pdf',
+                            text: '<i class="fas fa-file-pdf"></i> PDF',
+                            className: 'btn btn-danger',
+                            orientation: 'portrait', // Ajusta el PDF a formato horizontal
+                            pageSize: 'A4', // Tamaño de página
+                            customize: function(doc) {
+                                doc.styles.tableHeader = {
+                                    bold: true,
+                                    fontSize: 12,
+                                    color: 'black'
+                                };
+                                doc.styles.tableBodyEven = {
+                                    alignment: 'left'
+                                };
+                                doc.defaultStyle.fontSize = 10; // Ajusta el tamaño de fuente
+                                doc.content[1].table.widths = Array(doc.content[1].table.body[0]
+                                    .length + 1).join('*').split('');
+                            },
+                            exportOptions: {
+                                columns: ':visible'
+                            }
+                        },
+                        {
+                            extend: 'print',
+                            text: '<i class="fas fa-print"></i> Imprimir',
+                            autoPrint: true,
+                            exportOptions: {
+                                columns: ':visible'
+                            }
+                        }
                     ]
                 });
             });

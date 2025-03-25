@@ -16,6 +16,15 @@
             </div>
         @endif
         <div class="row justify-content-center">
+            @if ($errors->any())
+                <div class="alert alert-danger">
+                    <ul>
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
             <div class="col-12">
                 <div class="card">
                     <div class="card-header text-center"><b>{{ __('SOLICITUD DE INSUMOS') }}</b></div>
@@ -37,22 +46,25 @@
                                     <form action="/agregarSolicitud" method="POST" id="solicitudForm">
                                         @csrf
                                         <div class="row">
-                                            <div class="col-12 col-md-6 col-xl-7">
+                                            <div class="col-12 col-md-6 col-xl-7 js-states">
                                                 <label for="">Producto</label>
                                                 <select id="selectProducto" class="form-control select2" name="producto">
-                                                    @foreach ($productos  as $producto )
-                                                        <option value="{{$producto->id}}">{{$producto->descripcion}}</option>
+                                                    @foreach ($productos as $producto)
+                                                        <option value="{{ $producto->id }}">{{ $producto->descripcion }}
+                                                        </option>
                                                     @endforeach
                                                 </select>
                                                 @error('producto')
                                                     <div class="alert alert-danger" role="alert">{{ $message }}</div>
                                                 @enderror
                                             </div>
-                                            <input type="hidden" class="form-control" name="producto_id" id="producto_id" value="{{old('producto_id')}}">
+                                            <input type="hidden" class="form-control" name="producto_id" id="producto_id"
+                                                value="{{ old('producto_id') }}">
                                             <div class="col-12 col-md-6 col-xl-5">
                                                 <label for="">Existencia</label>
-                                                <input class="form-control" type="number" value="{{ old('existencia') }}" min="0" name="existencia" id="existencia" readonly>
-                                                @error('existencia')
+                                                <input class="form-control" type="number" value="{{ old('inventario') }}"
+                                                    min="0" name="inventario" id="inventario" readonly>
+                                                @error('inventario')
                                                     <div class="alert alert-danger" role="alert">{{ $message }}</div>
                                                 @enderror
                                             </div>
@@ -61,21 +73,24 @@
                                         <div class="row">
                                             <div class="col-12 col-md-6">
                                                 <label for="">Unidad</label>
-                                                <input class="form-control" type="text" readonly name="unidad" id="unidad" value="{{ old('unidad') }}">
+                                                <input class="form-control" type="text" readonly name="unidad"
+                                                    id="unidad" value="{{ old('unidad') }}">
                                                 @error('unidad')
                                                     <div class="alert alert-danger" role="alert">{{ $message }}</div>
                                                 @enderror
                                             </div>
                                             <div class="col-12 col-md-6">
                                                 <label for="">Cantidad</label>
-                                                <input class="form-control" type="number" value="{{ old('cantidad') }}" min="1" name="cantidad">
+                                                <input class="form-control" type="number" value="{{ old('cantidad') }}"
+                                                    min="1" name="cantidad">
                                                 @error('cantidad')
                                                     <div class="alert alert-danger" role="alert">{{ $message }}</div>
                                                 @enderror
                                             </div>
                                             <div class="col-12 col-md-4">
                                                 <label for="">Comentarios</label>
-                                                <input class="form-control" type="text" value="{{ old('comentarios') }}" name="comentarios">
+                                                <input class="form-control" type="text" value="{{ old('comentarios') }}"
+                                                    name="comentarios">
                                                 @error('comentarios')
                                                     <div class="alert alert-danger" role="alert">{{ $message }}</div>
                                                 @enderror
@@ -97,37 +112,17 @@
                                             <tr>
                                                 <th scope="col" class="text-center">#</th>
                                                 <th scope="col" class="text-center">Producto</th>
-                                                <th scope="col" class="text-center">Stock</th>
-                                                <th scope="col" class="text-center">Unidad</th>
                                                 <th scope="col" class="text-center">Cantidad</th>
                                                 <th scope="col" class="text-center">Comentarios</th>
-                                                <th scope="col" class="text-center">Acciones</th>
-
                                             </tr>
                                         </thead>
                                         <tbody>
                                             @foreach ($solicitudes as $solicitud)
                                                 <tr>
                                                     <th scope="row">{{ $solicitud->id }}</th>
-                                                    <td class="text-center">{{ $solicitud->producto }}</td>
-                                                    <td class="text-center">{{ $solicitud->unidad }}</td>
+                                                    <td class="text-center">{{ $solicitud->producto_nombre }}</td>
                                                     <td class="text-center">{{ $solicitud->cantidad }}</td>
-                                                    <td class="text-center">{{ $solicitud->usuario }}</td>
                                                     <td class="text-center">{{ $solicitud->comentarios }}</td>
-                                                    <td class="text-center text-danger">
-                                                        <div class="row">
-                                                            <div class="col">
-                                                                <a href="">
-                                                                    <i class="bi bi-plus-circle"></i>
-                                                                </a>
-                                                            </div>
-                                                            <div class="col">
-                                                                <a href="">
-                                                                    <i class="bi bi-dash-circle-dotted"></i>
-                                                                </a>
-                                                            </div>
-                                                        </div>
-                                                    </td>
                                                 </tr>
                                             @endforeach
                                         </tbody>
@@ -167,7 +162,8 @@
 
 
     <!-- Modal -->
-    <div class="modal fade" id="registro" tabindex="-1" role="dialog" aria-labelledby="registroTitle" aria-hidden="true">
+    <div class="modal fade" id="registro" tabindex="-1" role="dialog" aria-labelledby="registroTitle"
+        aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
             <div class="modal-content">
                 <div class="modal-header bg-success text-white">
@@ -176,9 +172,7 @@
                 <div class="modal-body">
                     <form action="/registerProduct" method="POST">
                         @csrf
-
                         <div class="row">
-
                             <div class="col-12 col-md-6">
                                 <div class="form-group">
                                     <label for="descripcion">Descripción</label>
@@ -195,7 +189,7 @@
                                 <div class="form-group">
                                     <label for="unidad">Unidad de medida</label>
                                     <select name="unidad" id="unidad"
-                                        class="form-control @error('unidad') is-invalid @enderror">
+                                        class="form-control @error('unidad') is-invalid @enderror" readonly>
                                         @foreach ($unidades as $unidad)
                                             <option value="{{ $unidad->unidad }}"
                                                 {{ old('unidad') == $unidad->unidad ? 'selected' : '' }}>
@@ -296,9 +290,39 @@
                             "previous": "Anterior"
                         }
                     },
-                    dom: 'Bfrtip',
+                    dom: '<"row"<"col-md-6"B><"col-md-6"f>>rtip',
                     buttons: [
-                        'copy', 'csv', 'excel', 'pdf', 'print'
+                        {
+                            extend: 'pdf',
+                            text: '<i class="fas fa-file-pdf"></i> PDF',
+                            className: 'btn btn-danger',
+                            orientation: 'portrait', // Ajusta el PDF a formato horizontal
+                            pageSize: 'A4', // Tamaño de página
+                            customize: function(doc) {
+                                doc.styles.tableHeader = {
+                                    bold: true,
+                                    fontSize: 12,
+                                    color: 'black'
+                                };
+                                doc.styles.tableBodyEven = {
+                                    alignment: 'left'
+                                };
+                                doc.defaultStyle.fontSize = 10; // Ajusta el tamaño de fuente
+                                doc.content[1].table.widths = Array(doc.content[1].table.body[0]
+                                    .length + 1).join('*').split('');
+                            },
+                            exportOptions: {
+                                columns: ':visible'
+                            }
+                        },
+                        {
+                            extend: 'print',
+                            text: '<i class="fas fa-print"></i> Imprimir',
+                            autoPrint: true,
+                            exportOptions: {
+                                columns: ':visible'
+                            }
+                        }
                     ]
                 });
             });
@@ -316,7 +340,7 @@
                             method: "GET",
                             success: function(response) {
                                 console.log("Respuesta del servidor:", response);
-                                $("#existencia").val(response.inventario)
+                                $("#inventario").val(response.inventario)
                                 $("#unidad").val(response.id_udm)
                                 $("#producto_id").val(response.id)
                             },
@@ -331,5 +355,23 @@
 
                 });
             });
+            $(".js-example-responsive").select2({
+                width: 'resolve' // need to override the changed default
+            });
         </script>
+        <style>
+            .dataTables_wrapper .dt-buttons {
+                float: left; /* Asegura que los botones estén alineados a la izquierda */
+                margin-bottom: 10px; /* Espaciado inferior */
+            }
+            .dataTables_filter {
+                float: right;
+                margin-bottom: 10px;
+                margin: auto
+            }
+
+            .dataTables_filter input {
+                width: 120px !important;
+            }
+        </style>
     @endsection

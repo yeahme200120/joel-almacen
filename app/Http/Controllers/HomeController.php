@@ -119,11 +119,16 @@ class HomeController extends Controller
         }
     }
     public function pedidos(){
+        $fecha = date('Y-m-d');
         //dd(auth::user()->id);
         $productos = Producto::all();
         $unidades = UDM::all();
         $categorias = Categoria::all();
-        $solicitudes = Solicitud::where("id_user","=",auth::user()->id)->get();
+        $solicitudes = Solicitud::join("productos as p","p.id","=","solicituds.producto")
+        ->where("id_user","=",auth::user()->id)
+        ->where("solicituds.fecha","=",$fecha)
+        ->select("solicituds.*", "p.descripcion as producto_nombre")
+        ->get();
         return view("pedidos", compact("productos","unidades", "categorias","solicitudes"));
     }
     public function agregarProducto(Request $request){
@@ -170,7 +175,7 @@ class HomeController extends Controller
     }
     public function agregarSolicitud(Request $request){
 
-        if($request->existencia < $request->cantidad){
+        if($request->inventario < $request->cantidad){
             return redirect()->back() ->withErrors(['cantidad' => 'El campo de cantidad no puede ser mayor que el inventario.'])->withInput();
         }
 
@@ -180,20 +185,16 @@ class HomeController extends Controller
             'unidad' => 'required',
             'cantidad' => 'required:',
             'comentarios' => 'required',
-            'fecha' => 'required',
         ], [
             'producto.required' => 'El producto es obligatorio.',
             'inventario.required' => 'El campo inventario es requerido. Selecciona un producto.',
             'unidad.required' => 'El campo unidad es un campo obligatorio',
             'cantidad.required' => 'El campo cantidad es un campo obligatorio',
             'comentarios.required' => 'El campo comentarios es un campo obligatorio',
-            'fecha.required' => 'El campo fecha es un campo obligatorio',
         ]);
-
         try {
             $producto = Producto::find($request->producto_id);
-            dd($producto);
-        } catch (\Throwable $th) {
+        } catch (\Throwable $th) {  
             dd($th);
         }
         try {
@@ -201,15 +202,19 @@ class HomeController extends Controller
             $solicitud->producto = $request->producto ? $request->producto : '';
             $solicitud->unidad = $request->unidad ? $request->unidad : '';
             $solicitud->cantidad = $request->cantidad ? $request->cantidad : 0;
-            $solicitud->id_user = $request->id_user ? $request->id_user : 0;
-            $solicitud->usuario = $request->usuario ? $request->usuario : '';
+            $solicitud->id_user = Auth::user()->id ? Auth::user()->id : 0;
+            $solicitud->usuario = Auth::user()->name ? Auth::user()->name : '';
             $solicitud->comentarios = $request->comentarios ? $request->comentarios : '';
             $solicitud->fecha = now();
+            $solicitud->estatus = 1;
 
             if($solicitud->save()){
-                return redirect('/home')->with('success', 'Producto registrado correctamente.');
+                $producto->inventario = ($producto->inventario ? $producto->inventario : 0) - ($request->cantidad ? $request->cantidad : 0);
+                if($producto->save()){
+                    return back()->with('success', 'Producto registrado correctamente.');
+                } 
+                return redirect('/home')->with('error', 'Error al actualizar el inventario');
             }else{
-                return redirect('/home')->with('error', 'Ocurrió un error al registrar el producto: ');
             }
         } catch (\Throwable $th) {
             return redirect('/home')->with('error', 'Ocurrió un error al registrar el producto: ' . $th->getMessage());
